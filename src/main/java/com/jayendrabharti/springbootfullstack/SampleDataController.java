@@ -15,4 +15,9 @@ public class SampleDataController {
     public User getSampleUser() {
         return new User(1, "Jay", "jay.bharti2804@gmail.com");
     }
+
+    @GetMapping("/message")
+    public String getSampleMessage() {
+        return "Hello from Spring Boot!";
+    }
 }
