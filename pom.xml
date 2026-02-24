@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.0.3</version>
+        <relativePath/>
+    </parent>
+    <groupId>com.jayendrabharti</groupId>
+    <artifactId>spring-boot-full-stack</artifactId>
+    <version>0.0.1</version>
+    <name>spring-boot-full-stack</name>
+    <description>Spring Boot + React full-stack application</description>
+    <url/>
+
+    <licenses><license/></licenses>
+    <developers><developer/></developers>
+    <scm>
+        <connection/><developerConnection/><tag/><url/>
+    </scm>
+
+    <properties>
+        <java.version>17</java.version>
+        <jar.finalName>app</jar.finalName>
+        <node.version>v22.2.0</node.version>
+        <pnpm.version>10.4.0</pnpm.version>
+        <frontend.dir>${project.basedir}/frontend</frontend.dir>
+        <openapi.output.dir>${project.basedir}</openapi.output.dir>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Tell Eclipse IDE to ignore these plugins during incremental builds -->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.springdoc</groupId>
+                                        <artifactId>springdoc-openapi-maven-plugin</artifactId>
+                                        <versionRange>[1.0,)</versionRange>
+                                        <goals><goal>generate</goal></goals>
+                                    </pluginExecutionFilter>
+                                    <action><ignore/></action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.openapitools</groupId>
+                                        <artifactId>openapi-generator-maven-plugin</artifactId>
+                                        <versionRange>[1.0,)</versionRange>
+                                        <goals><goal>generate</goal></goals>
+                                    </pluginExecutionFilter>
+                                    <action><ignore/></action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>com.github.eirslett</groupId>
+                                        <artifactId>frontend-maven-plugin</artifactId>
+                                        <versionRange>[1.0,)</versionRange>
+                                        <goals>
+                                            <goal>install-node-and-pnpm</goal>
+                                            <goal>pnpm</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action><ignore/></action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <finalName>${jar.finalName}</finalName>
+
+        <plugins>
+
+            <!-- FIX 1: Moved from pluginManagement to plugins so it actually executes -->
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>2.0.0</version>
+                <executions>
+                    <!-- FIX 3: Added workingDirectory for consistency -->
+                    <execution>
+                        <id>install-node-and-pnpm</id>
+                        <goals><goal>install-node-and-pnpm</goal></goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <nodeVersion>${node.version}</nodeVersion>
+                            <pnpmVersion>${pnpm.version}</pnpmVersion>
+                            <workingDirectory>${frontend.dir}</workingDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>pnpm-install</id>
+                        <goals><goal>pnpm</goal></goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <arguments>install</arguments>
+                            <workingDirectory>${frontend.dir}</workingDirectory>
+                        </configuration>
+                    </execution>
+                    <!-- pnpm build runs at verify — after post-integration-test
+                         where the TS client is generated, so the order is correct -->
+                    <execution>
+                        <id>pnpm-build</id>
+                        <goals><goal>pnpm</goal></goals>
+                        <phase>verify</phase>
+                        <configuration>
+                            <arguments>build</arguments>
+                            <workingDirectory>${frontend.dir}</workingDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>start-app</id>
+                        <phase>pre-integration-test</phase>
+                        <goals><goal>start</goal></goals>
+                        <!-- FIX 4: Wait for app to fully start before proceeding -->
+                        <configuration>
+                            <wait>1000</wait>
+                            <maxAttempts>60</maxAttempts>
+                        </configuration>
+                    </execution>
+                    <!-- stop-app is declared last in post-integration-test
+                         so the TS client plugin (declared before it) runs first -->
+                    <execution>
+                        <id>stop-app</id>
+                        <phase>post-integration-test</phase>
+                        <goals><goal>stop</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-maven-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>generate-openapi-spec</id>
+                        <phase>integration-test</phase>
+                        <goals><goal>generate</goal></goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <apiDocsUrl>http://localhost:8080/v3/api-docs</apiDocsUrl>
+                    <outputFileName>openapi.json</outputFileName>
+                    <!-- FIX 6: Output to project root instead of inside frontend/ -->
+                    <outputDir>${openapi.output.dir}</outputDir>
+                </configuration>
+            </plugin>
+
+            <!-- Runs before stop-app because it's declared first in post-integration-test -->
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>7.20.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-typescript-client</id>
+                        <phase>post-integration-test</phase>
+                        <goals><goal>generate</goal></goals>
+                        <configuration>
+                            <inputSpec>${openapi.output.dir}/openapi.json</inputSpec>
+                            <generatorName>typescript-fetch</generatorName>
+                            <output>${frontend.dir}/src/generated</output>
+                            <cleanupOutput>true</cleanupOutput>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>fix-generated-base-path</id>
+                        <phase>post-integration-test</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <target>
+                                <replace
+                                    file="${frontend.dir}/src/generated/runtime.ts"
+                                    token='export const BASE_PATH = "http://localhost:8080".replace(/\/+$/, "");'
+                                    value='export const BASE_PATH = "";'/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>

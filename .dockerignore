@@ -1,0 +1,17 @@
+# Ignore Maven and Node build artifacts
+/target
+/frontend/node_modules
+/frontend/dist
+/frontend/.next
+/frontend/build
+/frontend/.turbo
+/frontend/.cache
+/frontend/src/generated
+/frontend/openapi.json
+.idea
+.vscode
+*.iml
+*.log
+*.swp
+*.md
+.DS_Store
