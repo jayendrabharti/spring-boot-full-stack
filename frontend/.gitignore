@@ -8,13 +8,13 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+node/
 dist
 dist-ssr
 *.local
 
 # generated api client
 /src/generated
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
