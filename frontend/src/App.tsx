@@ -1,26 +1,29 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-import { SampleDataControllerApi } from "./generated";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/providers/AuthProvider";
+import MainLayout from "@/layouts/MainLayout";
+import AuthLayout from "@/layouts/AuthLayout";
+import HomePage from "@/pages/HomePage";
+import LoginPage from "@/pages/LoginPage";
+import SignupPage from "@/pages/SignupPage";
 
 function App() {
-  const [sampleData, setSampleData] = useState<any>("");
-  const sampleDataController = new SampleDataControllerApi();
-
-  useEffect(() => {
-    sampleDataController
-      .getSampleUser()
-      .then((data) => {
-        setSampleData(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching sample data:", error);
-      });
-  },[]);
-
   return (
-    <div>
-      <pre>{JSON.stringify(sampleData, null, 2)}</pre>
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          {/* Auth layout — /login, /signup */}
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+          </Route>
+
+          {/* Main layout — everything else */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<HomePage />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
