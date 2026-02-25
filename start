@@ -1,7 +1,11 @@
 #!/bin/sh
 
-# Set and export the environment variable for child processes
-export SPRING_PROFILES_ACTIVE=prod
+# Load environment variables from .env file
+if [ -f .env ]; then
+  set -a
+  . ./.env
+  set +a
+fi
 
 # Start the application
 java -jar target/app.jar
